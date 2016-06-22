@@ -1,4 +1,4 @@
-bin/bash
+#bin/bash
 PATH=/usr/local/bin:/usr/bin:/bin
 cd "$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
 source_location="source_devflarum/"
