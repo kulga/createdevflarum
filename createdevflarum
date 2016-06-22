@@ -8,6 +8,7 @@ database_username=''
 database_password=''
 
 composer_file="$database_name"_files/"$database_name"_composer.json
+config
 reset_sequence_file="$database_name"_files/"$database_name"_reset_sequence
 update_pid="$database_name"_files/"$database_name"_update.pid
 
@@ -142,10 +143,16 @@ if [ ! -d "$source_location" ]
   then
     (
       yes | /usr/local/bin/composer create-project flarum/flarum "$source_location" --stability=dev
-      if [ ! -d "$source_location"/assets/fonts ]; then cp -r fonts "$source_location"/assets; fi
+      if [ ! -d "$source_location"/assets/fonts ]; then cp -r "$source_location/vendor/components/font-awesome/fonts "$source_location"/assets; fi
       cd "$source_location"
-      if [ -f ../"$composer_file" ]; then cp ../"$composer_file" composer.json; fi
-      /usr/local/bin/composer update --prefer-source
+      if [ ! -f ../"$composer_file" ];
+        then
+          echo Downloading "$composer_file"
+          curl -s 'https://raw.githubusercontent.com/kulga/createdevflarum/master/docs/composer_default.json' > ../"$composer_file"
+        else
+          cp ../"$composer_file" composer.json
+      fi
+      /usr/local/bin/composer update --prefer-source 
     )
 fi
 
