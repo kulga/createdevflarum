@@ -13,7 +13,7 @@ update_pid="$database_name"_files/"$database_name"_update.pid
 
 if [ ! -d "$database_name"_files ]; then mkdir "$database_name"_files; fi
 
-while getopts "bc:d:firu" opt; do
+while getopts "bc:d:fiu" opt; do
   case "$opt" in
     b)
       exit_code=0
@@ -96,6 +96,17 @@ while getopts "bc:d:firu" opt; do
       if [ -e full_"$database_username".sql ]; then /usr/bin/mysql -u"$database_username" -p"$database_password" "$database_name" < full_"$database_username".sql; fi
       exit 0
       ;;
+    i)
+      # Full replacement
+      # Drop all tables
+      mysqldump -u"$database_username" -p"$database_password" --add-drop-table --no-data "$database_name" | grep ^DROP | mysql -u"$database_username" -p"$database_password" "$database_name"
+      rm "$forum_location"config.php
+
+      read -p "Hit Enter to Save Current State "
+      mysqldump -u"$database_username" -p"$database_password" "$database_name" > full_"$database_username".sql
+      exit 0
+      ;;
+
     u)
       # Full update without restore
 
