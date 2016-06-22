@@ -8,7 +8,7 @@ database_username=''
 database_password=''
 
 composer_file="$database_name"_files/"$database_name"_composer.json
-config
+config_config="$database_name"_files/"$database_name"_config.php
 reset_sequence_file="$database_name"_files/"$database_name"_reset_sequence
 update_pid="$database_name"_files/"$database_name"_update.pid
 
