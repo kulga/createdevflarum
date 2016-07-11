@@ -7,80 +7,15 @@ database_name=''
 database_username=''
 database_password=''
 
-composer_file="$database_name"_files/"$database_name"_composer.json
-config_config="$database_name"_files/"$database_name"_config.php
-reset_sequence_file="$database_name"_files/"$database_name"_reset_sequence
-update_pid="$database_name"_files/"$database_name"_update.pid
+composer_file=files/"$database_name"_composer.json
+config_file=files/"$database_name"_config.php
+reset_sequence_file=files/"$database_name"_reset_sequence
+update_pid=files/"$database_name"_update.pid
 
-if [ ! -d "$database_name"_files ]; then mkdir "$database_name"_files; fi
+if [ ! -d files ]; then mkdir files; fi
 
-while getopts "bc:d:fiu" opt; do
+while getopts "c:d:fiu" opt; do
   case "$opt" in
-    b)
-      exit_code=0
-      max_span_time='259200' # 72 hours
-      min_span_time='3600'
-      if [ ! -f "$forum_location"commits.txt ]
-        then
-          (
-            cd "$forum_location"
-            echo -e 'Will\n' > commits.txt
-            composer show | grep flarum >> commits.txt
-          )
-      fi
-      if [ -s "$update_pid" ]
-        then
-          pid_span_time=$(cat "$update_pid")
-          pid_mod_time=$(stat -c '%Y' "$update_pid")
-          current_time=$(date '+%s')
-          time_elapsed=$(($current_time - $pid_mod_time))
-          if [ "$time_elapsed" -ge "$pid_span_time" ]
-            then
-              composer_output=$(cd "$source_location"; /usr/local/bin/composer update --no-interaction &> /dev/stdout | wc -l)
-              if [ "$composer_output" -gt 3 ]
-                then
-                  echo Updated
-
-                  pid_span_time="$(bc <<< "$pid_span_time * .4" | cut -d\. -f1)"
-                  rsync -a --delete --exclude='.git' --exclude='dev-master.tar.gz' --exclude='assets/avatars' "$source_location" "$forum_location"
-                  tar --exclude='config.php' --exclude='dev-master.tar.gz' -zcf dev-master.tar.gz "$forum_location"
-                  mv dev-master.tar.gz "$forum_location"
-
-                  (
-                    cd "$forum_location"
-                    echo -e "$(date -u '+Upgraded %b %d %H:%M UTC')". Will check for updates in "$((( $pid_span_time - $time_elapsed ) / 60 / 60 / 24))" day$(if [ $((( $pid_span_time - $time_elapsed ) / 60 / 60 / 24)) -ne 1 ]; then echo -n 's'; fi), "$((( $pid_span_time - $time_elapsed ) / 60 / 60 % 24))" hours and "$((( $pid_span_time - $time_elapsed ) / 60 % 60))" minutes '\n\n' > commits.txt
-                    composer show | grep flarum >> commits.txt
-                  )
-
-                  exit_code=0
-                else
-                  pid_span_time="$(($pid_span_time * 2))"
-                  echo No update
-                  sed -i "1s:Will.*:Will check for updates in "$((( $pid_span_time - $time_elapsed ) / 60 / 60 / 24))" day$(if [ $((( $pid_span_time - $time_elapsed ) / 60 / 60 / 24)) -ne 1 ]; then echo -n 's'; fi), "$((( $pid_span_time - $time_elapsed ) / 60 / 60 % 24))" hours and "$((( $pid_span_time - $time_elapsed ) / 60 % 60))" minutes:g" "$forum_location"commits.txt
-                  exit_code=1
-              fi
-                # Verification of span time between ranges
-              if [ "$pid_span_time" -gt "$max_span_time" ]
-                  then
-                    pid_span_time="$max_span_time"
-              elif [ "$pid_span_time" -lt "$min_span_time" ]
-                  then
-                    pid_span_time="$min_span_time"
-              fi
-              echo "$pid_span_time" > "$update_pid"
-              echo Will check for updates in "$((( $pid_span_time - $time_elapsed ) / 60 / 60 / 24))" day$(if [ $((( $pid_span_time - $time_elapsed ) / 60 / 60 / 24)) -ne 1 ]; then echo -n 's'; fi), "$((( $pid_span_time - $time_elapsed ) / 60 / 60 % 24))" hours and "$((( $pid_span_time - $time_elapsed ) / 60 % 60))" minutes
-            else
-              echo Will check for updates in "$((( $pid_span_time - $time_elapsed ) / 60 / 60 / 24))" day$(if [ $((( $pid_span_time - $time_elapsed ) / 60 / 60 / 24)) -ne 1 ]; then echo -n 's'; fi), "$((( $pid_span_time - $time_elapsed ) / 60 / 60 % 24))" hours and "$((( $pid_span_time - $time_elapsed ) / 60 % 60))" minutes
-              exit_code=1
-              sed -i "1s:Will.*:Will check for updates in "$((( $pid_span_time - $time_elapsed ) / 60 / 60 / 24))" day$(if [ $((( $pid_span_time - $time_elapsed ) / 60 / 60 / 24)) -ne 1 ]; then echo -n 's'; fi), "$((( $pid_span_time - $time_elapsed ) / 60 / 60 % 24))" hours and "$((( $pid_span_time - $time_elapsed ) / 60 % 60))" minutes:g" "$forum_location"commits.txt
-          fi
-            else
-              # If no span time set, default to average of min / max span time
-              sed -i "1s:Will.*:Will check for updates in "$((( $pid_span_time - $time_elapsed ) / 60 / 60 / 24))" day$(if [ $((( $pid_span_time - $time_elapsed ) / 60 / 60 / 24)) -ne 1 ]; then echo -n 's'; fi), "$((( $pid_span_time - $time_elapsed ) / 60 / 60 % 24))" hours and "$((( $pid_span_time - $time_elapsed ) / 60 % 60))" minutes:g" "$forum_location"commits.txt
-              echo $((($min_span_time + $max_span_time ) / 2)) > "$update_pid"
-      fi
-      exit "$exit_code"
-      ;;
     c)
       source_location="$OPTARG"
       ;;
@@ -107,7 +42,6 @@ while getopts "bc:d:fiu" opt; do
       mysqldump -u"$database_username" -p"$database_password" "$database_name" > full_"$database_username".sql
       exit 0
       ;;
-
     u)
       # Full update without restore
 
@@ -118,11 +52,6 @@ while getopts "bc:d:fiu" opt; do
           cp -p "$composer_file" "$source_location"composer.json
       fi
 
-      pid_span_time=$(cat "$update_pid")
-      pid_mod_time=$(stat -c '%Y' "$update_pid")
-      current_time=$(date '+%s')
-      time_elapsed=$(($current_time - $pid_mod_time))
-
       (
         cd "$source_location"
         /usr/local/bin/composer update --no-interaction
@@ -130,7 +59,6 @@ while getopts "bc:d:fiu" opt; do
       rsync -a --delete --exclude='.git' --exclude='commits.txt' --exclude='dev-master.tar.gz' "$source_location" "$forum_location"
       (
         cd "$forum_location"
-        echo -e "$(date -u '+Upgraded %b %d %H:%M UTC')". Will check for updates in "$((( $pid_span_time - $time_elapsed ) / 60 / 60 / 24))" day$(if [ $((( $pid_span_time - $time_elapsed ) / 60 / 60 / 24)) -ne 1 ]; then echo -n 's'; fi), "$((( $pid_span_time - $time_elapsed ) / 60 / 60 % 24))" hours and "$((( $pid_span_time - $time_elapsed ) / 60 % 60))" minutes '\n' > commits.txt
         composer show | grep flarum >> commits.txt
       )
       exit 0
@@ -143,7 +71,7 @@ if [ ! -d "$source_location" ]
   then
     (
       yes | /usr/local/bin/composer create-project flarum/flarum "$source_location" --stability=dev
-      if [ ! -d "$source_location"/assets/fonts ]; then cp -r "$source_location"/vendor/components/font-awesome/fonts "$source_location"/assets; fi
+      if [ ! -d "$source_location"/assets/fonts ]; then cp -r "$source_location/vendor/components/font-awesome/fonts" "$source_location"/assets; fi
       cd "$source_location"
       if [ ! -f ../"$composer_file" ];
         then
@@ -152,7 +80,7 @@ if [ ! -d "$source_location" ]
         else
           cp ../"$composer_file" composer.json
       fi
-      /usr/local/bin/composer update --prefer-source 
+      /usr/local/bin/composer update --prefer-source
     )
 fi
 
