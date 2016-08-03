@@ -9,7 +9,6 @@ database_password=''
 
 composer_file=files/"$database_name"_composer.json
 config_file=files/"$database_name"_config.php
-reset_sequence_file=files/"$database_name"_reset_sequence
 update_pid=files/"$database_name"_update.pid
 
 if [ ! -d files ]; then mkdir files; fi
@@ -52,15 +51,10 @@ while getopts "c:d:fiu" opt; do
           cp -p "$composer_file" "$source_location"composer.json
       fi
 
-      (
-        cd "$source_location"
-        /usr/local/bin/composer update --no-interaction
-      )
+
+      /usr/local/bin/composer --working-dir="$source_location" update --no-interaction
       rsync -a --delete --exclude='.git' --exclude='commits.txt' --exclude='dev-master.tar.gz' "$source_location" "$forum_location"
-      (
-        cd "$forum_location"
-        composer show | grep flarum >> commits.txt
-      )
+      composer show --working-dir="$source_location" | grep flarum >> commits.txt
       exit 0
       ;;
   esac
