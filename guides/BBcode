@@ -1,1 +1,36 @@
+# BBCode
 
+Feel free to modify this post and test out features of this guide!
+Don't worry, changes are removed :)
+___
+[b]This is a bold statement[/b]
+```
+[b]This is a bold statement[/b]
+```
+
+
+[i]This statement has italic slanting[/i]
+```
+[i]This statement has italic slanting[/i]
+```
+
+
+
+[center]This is centered in the middle![/center]
+```
+[center]This is centered in the middle![/center]
+```
+This is a [i]relative[/i] url
+[url]1-info[/url] 
+```
+This is a [i]relative[/i] url
+[url]1-info[/url] 
+```
+___
+
+Features can be combined
+
+For example, you can make a [b][i]bold, italic[/i] then continue in bold.[/b]
+```
+For example, you can make a [b][i]bold, italic[/i] then continue in bold.[/b]
+```
