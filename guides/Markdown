@@ -1,1 +1,30 @@
+**This is a bold statement**
+```
+**This is a bold statement**
+```
 
+
+*This statement has italic slanting*
+```
+*This statement has italic slanting*
+```
+
+
+
+[center]This is centered in the middle![/center]
+```
+[center]This is centered in the middle![/center]
+```
+This is a *relative* url
+[Link for 1-info](1-info)
+```
+This is a *relative* url
+[Link for 1-info](1-info)
+```
+___
+
+Features can be combined
+
+For example, you can make a ***bold, italic* then continue in bold.**
+```
+For example, you can make a ***bold, italic* then continue in bold.**
